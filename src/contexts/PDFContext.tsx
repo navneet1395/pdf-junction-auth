@@ -1,25 +1,13 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "./AuthContext";
-
-export interface PDFDocument {
-  id: string;
-  userId: string;
-  title: string;
-  name: string;
-  address: string;
-  date: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { PDFDocument, PDFFormData } from "@/types/pdf";
 
 interface PDFContextType {
   documents: PDFDocument[];
   loading: boolean;
   error: string | null;
-  createDocument: (document: Omit<PDFDocument, "id" | "userId" | "createdAt" | "updatedAt">) => Promise<PDFDocument>;
+  createDocument: (document: PDFFormData) => Promise<PDFDocument>;
   updateDocument: (id: string, document: Partial<PDFDocument>) => Promise<PDFDocument>;
   deleteDocument: (id: string) => Promise<void>;
   getDocument: (id: string) => PDFDocument | undefined;
@@ -34,7 +22,6 @@ export function PDFProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load documents from localStorage when user changes
     if (user) {
       loadDocuments();
     } else {
@@ -67,7 +54,7 @@ export function PDFProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const createDocument = async (document: Omit<PDFDocument, "id" | "userId" | "createdAt" | "updatedAt">): Promise<PDFDocument> => {
+  const createDocument = async (document: PDFFormData): Promise<PDFDocument> => {
     try {
       setLoading(true);
       if (!user) throw new Error("User must be logged in");
@@ -197,3 +184,5 @@ export function usePDF() {
   }
   return context;
 }
+
+export type { PDFDocument, PDFFormData };

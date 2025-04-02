@@ -1,0 +1,511 @@
+import React, { useState, useEffect } from "react";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Font,
+  Image,
+  pdf,
+} from "@react-pdf/renderer";
+import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
+
+// Register Hindi Font
+Font.register({
+  family: "Noto Sans Devanagari",
+  src: "/fonts/NotoSansDevanagari-Regular.ttf",
+});
+
+// PDF Document Component
+const HindiDocument = ({ data }) => {
+  // Define styles with Hindi font support
+  const styles = StyleSheet.create({
+    page: {
+      flexDirection: "column",
+      backgroundColor: "#FFFFFF",
+      padding: 20,
+    },
+    container: {
+      padding: 10,
+      minHeight: "90%",
+    },
+    header: {
+      fontSize: 12,
+      textAlign: "center",
+      fontFamily: "Noto Sans Devanagari",
+      marginBottom: 5,
+      fontWeight: "bold",
+    },
+    subHeader: {
+      fontSize: 12,
+      textAlign: "center",
+      fontFamily: "Noto Sans Devanagari",
+      fontWeight: "bold",
+      marginBottom: 10,
+    },
+    sectionHeader: {
+      fontSize: 10,
+      fontFamily: "Noto Sans Devanagari",
+      marginTop: 10,
+      marginBottom: 5,
+    },
+    row: {
+      flexDirection: "row",
+      marginBottom: 8,
+      flexWrap: "wrap",
+    },
+    column: {
+      flexDirection: "column",
+      marginRight: 10,
+      minWidth: "45%",
+    },
+    label: {
+      fontSize: 10,
+      fontFamily: "Noto Sans Devanagari",
+    },
+    value: {
+      fontSize: 10,
+      fontFamily: "Noto Sans Devanagari",
+      fontWeight: "bold",
+    },
+    signature: {
+      marginTop: 20,
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    signatureItem: {
+      alignItems: "center",
+    },
+    footer: {
+      marginTop: 20,
+      fontSize: 8,
+      fontFamily: "Noto Sans Devanagari",
+      textAlign: "center",
+    },
+    topSection: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 10,
+    },
+    section: {
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      textAlign: "center",
+    },
+    permitNumber: {
+      fontSize: 10,
+      fontFamily: "Noto Sans Devanagari",
+      marginBottom: 10,
+      marginTop: 5,
+      textAlign: "center",
+    },
+    boldLabel: {
+      fontWeight: "bold",
+      fontSize: 10,
+      fontFamily: "Noto Sans Devanagari",
+    },
+    formLocation: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 20,
+    },
+    note: {
+      fontSize: 8,
+      fontFamily: "Noto Sans Devanagari",
+      marginTop: 5,
+      textAlign: "justify",
+      lineHeight: 1.5,
+    },
+    horizontalLine: {
+      borderBottomWidth: 1,
+      borderBottomColor: "#000000",
+      marginVertical: 10,
+      width: "100%",
+    },
+    businessDetails: {
+      marginTop: 5,
+      marginBottom: 5,
+    },
+    twoColumnSection: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+      marginTop: 5,
+    },
+    halfWidth: {
+      width: "48%",
+    },
+    fullWidth: {
+      width: "100%",
+    },
+    signatureLine: {
+      borderBottomWidth: 1,
+      borderBottomColor: "#000000",
+      width: 150,
+      marginTop: 10,
+      marginBottom: 5,
+      alignSelf: "center",
+    },
+  });
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return dateString;
+  };
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.container}>
+          {/* Header Section */}
+          <Text style={styles.header}>"केवल राज्य के बाहर उपयोग हेतु "</Text>
+          <Text style={styles.header}>मूल प्रति</Text>
+          <Text style={styles.header}>अनुज्ञा-पत्र</Text>
+          <Text style={[styles.label, { textAlign: "center" }]}>
+            कृषि उपज मंडी समिति - {data?.marketPlace || "Dabra"}
+          </Text>
+          <Text style={[styles.label, { textAlign: "center" }]}>
+            जिला - {data?.marketDistrict || "Gwalior"}
+          </Text>
+          <Text style={[styles.label, { textAlign: "center" }]}>
+            अधिनियम की धारा-19(6) तथा उपविधि 20(10)
+          </Text>
+          <Text style={styles.boldLabel} style={{ textAlign: "center" }}>
+            (मूल मंडी क्षेत्र अथवा मंडी प्रांगण से माल बाहर ले जाने के लिये)
+          </Text>
+
+          <Text style={styles.permitNumber}>
+            अनुज्ञा-पत्र क्रमांक : {data?.permitNumber || "24241015829945627"}
+          </Text>
+
+          <View style={styles.horizontalLine} />
+
+          {/* Main Form Data */}
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              1. कृषि उपज का नाम: {data?.cropName || "गेँ"}
+            </Text>
+            <Text style={styles.label}>
+              किस्म: {data?.cropVariety || "गेँ"}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              2. कृषि उपज की मात्रा -नग संख्या:{" "}
+              {data?.cropQuantityUnits || "437"}
+            </Text>
+            <Text style={styles.label}>
+              कुल वजन(क्विंटल में): {data?.totalWeight || "260.35"}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              3. कृषि उपज के स्वामी / विक्रेता का नाम:{" "}
+              {data?.ownerName || "M/S SWASTIK FOOD PRODUCT"}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              4. वाहन का प्रकार: {data?.vehicleType || "ट्रक"}
+            </Text>
+            <Text style={styles.label}>
+              वाहन क्रमांक: {data?.vehicleNumber || "MH04GR8836"}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              5. तौल कांटा का नाम एवं स्थान: {data?.weighingStation || ""}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              6. तौल कांटा पर्ची नम्बर: {data?.weighingSlipNumber || ""}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              7. वाहन चालक का नाम: {data?.driverName || "SONU"}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              8. जमा की गई मंडी फीस / अनुज्ञापत्र का विववरण:{" "}
+              {data?.depositedMarketFee || ""}
+            </Text>
+            <Text style={styles.label}>
+              बाहर ले जाने का उद्देश्य: {data?.purposeOfTransport || "Sale"}
+            </Text>
+          </View>
+
+          <View style={styles.horizontalLine} />
+
+          {/* Trader and Farmer Sections */}
+          <View style={styles.twoColumnSection}>
+            <View style={styles.halfWidth}>
+              <Text style={styles.boldLabel}>व्यापारी के लिये</Text>
+              <View style={styles.businessDetails}>
+                <Text style={styles.label}>
+                  अनुज्ञप्त क्रमांक/मान नंबर: {data?.licenseNumber || "2410158"}
+                </Text>
+                <Text style={styles.label}>
+                  कृषि उपज का विवरण: {data?.cropDetails || "----"}
+                </Text>
+                <Text style={styles.label}>
+                  क्रय दिनाँक: {data?.purchaseDate || "----"}
+                </Text>
+                <Text style={styles.label}>
+                  कुल लाई गई मात्रा: {data?.totalBroughtQuantity || "----"}
+                </Text>
+                <Text style={styles.label}>
+                  वापिस ले जायी गई मात्रा: {data?.returnedQuantity || "----"}
+                </Text>
+                <Text style={styles.label}>
+                  वापिस ले जाने का कारण: {data?.returnReason || "----"}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.halfWidth}>
+              <Text style={styles.boldLabel}>कृषकों के लिये</Text>
+              <View style={styles.businessDetails}>
+                <Text style={styles.label}>
+                  कुल क्रय मात्रा (क्विंटल में):{" "}
+                  {data?.totalPurchaseQuantity || "----"}
+                </Text>
+                <Text style={styles.label}>
+                  व्यापारी के पास इस अनुज्ञापत्र से निकासी के बाद शेष संग्रह वजन
+                  (क्विंटल में): {data?.remainingStockWeight || "----"}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.horizontalLine} />
+
+          {/* Buyer Details */}
+          <View style={styles.fullWidth}>
+            <Text style={styles.label}>
+              क्रेता व्यापारी / फर्म / स्थान, जहाँ कृषि उपज (विक्रय /प्रोसेसिंग)
+              के उद्देश्य से ले जायी जानी है का नाम:{" "}
+              {data?.buyerTraderName ||
+                "BHAWANI ROLLER FLOUR MILLS PRIVATE LIMITED"}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              जी.एस.टी. पंजीयन क्रमांक: {data?.gstNumber || "09AAACB0643F2Z3"}
+            </Text>
+            <Text style={styles.label}>
+              मान नंबर: {data?.buyerManNumber || ""}
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              मंडी समिति का जिला: {data?.marketDistrict || "Ghaziabad"}
+            </Text>
+            <Text style={styles.label}>
+              मंडी समिति: {data?.marketCommittee || ""}
+            </Text>
+            <Text style={styles.label}>
+              जिला/प्रदेश: {data?.stateDistrict || "Uttar Pradesh"}
+            </Text>
+          </View>
+
+          <View style={styles.fullWidth}>
+            <Text style={styles.label}>
+              गंतव्य / डिलीवरी क्रेता व्यापारी / फर्म / स्थान जहाँ कृषि उपज
+              (विक्रय / प्रोसेसिंग) के उद्देश्य से भेजी जाना है का नाम:
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              जी.एस.टी. पंजीयन क्रमांक: {data?.destGstNumber || ""}
+            </Text>
+            <Text style={styles.label}>
+              मान नंबर: {data?.destManNumber || ""}
+            </Text>
+          </View>
+
+          <View style={styles.note}>
+            <Text>
+              (नोट - क्रेता व्यापारी को जारी इस अनुज्ञापत्र के आधार पर ही मंडी
+              फीस से छूट का लाभ दिया जाकर गंतव्य / डिलीवरी क्रेता के पक्ष में यह
+              अनुज्ञापत्र जारी किया गया है |)
+            </Text>
+          </View>
+
+          <View style={styles.horizontalLine} />
+
+          {/* Declaration */}
+          <View style={styles.note}>
+            <Text>
+              में प्रमाणित करता हूँ(व्यापारी के लिये लागू) अनुज्ञापत्र में दर्ज
+              कृषि उपज का भुगतान विक्रेता को किया जा चुका है तथा इस देय मंडी
+              शुल्क / निराश्रित सहायता राशि का पूर्ण भुगतान किया जा चुका है|
+            </Text>
+          </View>
+
+          {/* Signature Section */}
+          <View style={styles.signature}>
+            <View style={styles.signatureItem}>
+              <View style={styles.signatureLine} />
+              <Text style={styles.label}>
+                ( {data?.ownerName || "M/S SWASTIK FOOD PRODUCT"} )
+              </Text>
+              <Text style={styles.label}>हस्ताक्षर</Text>
+              <Text style={styles.label}>
+                (कृषि उपज के स्वामी / प्रतिनिधि के)
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.note}>
+            <Text>
+              उपरोक्त कृषि उपज की मंडी प्रांगण के बाहर ले जाने की अनुमति प्रदान
+              की जाती है |प्रमाणित किया जाता है कि जहाँ तक ये व्यापारी के माल पर
+              लागू होता है, मैने भलीभांति जाँच कर अपने आपको आश्वस्त कर लिया है
+              कि अनुज्ञापत्र में निकासी हेतु दर्शायी गई कृषि उपज का पूर्ण भुगतान
+              विक्रेता को किया जा चुका है | तथा इस पर देय मंडी फीस एवं निराश्रित
+              सहायता राशि का भुगतान प्राप्त किया जा चुका है |
+            </Text>
+          </View>
+
+          {/* Location and Date */}
+          <View style={styles.formLocation}>
+            <View>
+              <Text style={styles.label}>
+                स्थान : {data?.marketPlace || "Dabra"}
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.label}>
+                जारी करने का दिनाँक एवं समय : {data?.issueDate || "Mar 27 2025"}{" "}
+                {data?.issueTime || "10:14PM"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.formLocation}>
+            <View>
+              <Text style={styles.label}>
+                प्रिंट दिनांक एवं समय : {data?.printDate || "Mar 27 2025"}{" "}
+                {data?.printTime || "10:14PM"}
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.label}>सक्षम मंडी कर्मचारी</Text>
+              <Text style={styles.label}>हस्ताक्षर / सील</Text>
+            </View>
+          </View>
+
+          {/* Footer */}
+          <Text style={styles.footer}>
+            This is Computer Generated and No signature is required.
+          </Text>
+          <Text style={styles.footer}>NIC NIC BHOPAL(MP) © 2025-2026</Text>
+        </View>
+      </Page>
+    </Document>
+  );
+};
+
+// Main Component
+const PDFViewerComponent = ({ data }) => {
+  const [isClient, setIsClient] = useState(false);
+
+  // Default data if none is provided
+  const data = {
+    marketPlace: "Dabra",
+    marketDistrict: "Gwalior",
+    permitNumber: "24241015829945627",
+    cropName: "गेँ",
+    cropVariety: "गेँ",
+    cropQuantityUnits: "437",
+    totalWeight: "260.35",
+    ownerName: "M/S SWASTIK FOOD PRODUCT",
+    vehicleType: "ट्रक",
+    vehicleNumber: "MH04GR8836",
+    driverName: "SONU",
+    purposeOfTransport: "Sale",
+    licenseNumber: "2410158",
+    buyerTraderName: "BHAWANI ROLLER FLOUR MILLS PRIVATE LIMITED",
+    gstNumber: "09AAACB0643F2Z3",
+    stateDistrict: "Uttar Pradesh",
+    issueDate: "Mar 27 2025",
+    issueTime: "10:14PM",
+    printDate: "Mar 27 2025",
+    printTime: "10:14PM",
+  };
+
+  const mergedData = { ...defaultData, ...data };
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return (
+    <div className="pdf-container">
+      <h1>कृषि उपज मंडी अनुज्ञा-पत्र</h1>
+
+      {isClient ? (
+       
+      ) : (
+        <p>Loading PDF viewer...</p>
+      )}
+
+      <style jsx>{`
+        .pdf-container {
+          max-width: 1000px;
+          margin: 0 auto;
+          padding: 20px;
+          font-family: "Arial", sans-serif;
+        }
+        h1 {
+          text-align: center;
+          color: #333;
+        }
+        .pdf-viewer {
+          margin: 20px 0;
+          border: 1px solid #ccc;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .download-button {
+          text-align: center;
+          margin: 20px 0;
+        }
+        .download-link {
+          background-color: #4caf50;
+          color: white;
+          padding: 10px 20px;
+          text-decoration: none;
+          border-radius: 4px;
+          font-weight: bold;
+          display: inline-block;
+          transition: background-color 0.3s;
+        }
+        .download-link:hover {
+          background-color: #45a049;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default PDFViewerComponent;

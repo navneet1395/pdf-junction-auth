@@ -171,7 +171,7 @@ const PDFGenerator = () => {
             {isEditMode ? t("pdf.edit.title") : t("pdf.create.title")}
           </h1>
         </div>
-
+        
         <form onSubmit={handleSubmit}>
           <PDFForm formData={formData} onChange={handleFormChange} />
           

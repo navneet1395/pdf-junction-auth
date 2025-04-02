@@ -77,16 +77,7 @@ const PDFForm = ({ formData, onChange }: PDFFormProps) => {
       {/* Crop and Vehicle Information */}
       <Card>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
-          <div className="space-y-2">
-            <Label htmlFor="cropName">कृषि उपज का नाम (Crop Name)</Label>
-            <Input
-              id="cropName"
-              name="cropName"
-              value={formData.cropName}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
+      
           
           <div className="space-y-2">
             <Label htmlFor="vehicleType">वाहन का प्रकार (Vehicle Type)</Label>
@@ -148,6 +139,16 @@ const PDFForm = ({ formData, onChange }: PDFFormProps) => {
       {/* Quantity and Quality Information */}
       <Card>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
+        <div className="space-y-2">
+            <Label htmlFor="cropName">कृषि उपज का नाम (Crop Name)</Label>
+            <Input
+              id="cropName"
+              name="cropName"
+              value={formData.cropName}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="millQuality">मिल कवालिटी (Mill Quality)</Label>
             <Input
@@ -428,57 +429,6 @@ const PDFForm = ({ formData, onChange }: PDFFormProps) => {
               type="time"
               value={formData.printTime}
               onChange={handleInputChange}
-              required
-            />
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Original Required Fields (keeping for compatibility) */}
-      <Card>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">{t("pdf.formName")}</Label>
-            <Input
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="address">{t("pdf.formAddress")}</Label>
-            <Input
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="date">{t("pdf.formDate")}</Label>
-            <Input
-              id="date"
-              name="date"
-              type="date"
-              value={formData.date}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="content">{t("pdf.formContent")}</Label>
-            <Textarea
-              id="content"
-              name="content"
-              value={formData.content}
-              onChange={handleInputChange}
-              rows={6}
               required
             />
           </div>

@@ -1,135 +1,181 @@
-import React, { useState, useEffect } from "react";
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  Font,
-  Image,
-  pdf,
-} from "@react-pdf/renderer";
-import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { usePDF, PDFDocument } from "@/contexts/PDFContext";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, Download, Edit } from "lucide-react";
+import Layout from "@/components/Layout";
+import { toast } from "@/components/ui/use-toast";
+import { format } from "date-fns";
+import PDFViewerComponent from "@/components/PDFViewerComponent";
+const PDFPreview = () => {
+  const { id } = useParams();
+  const { t } = useLanguage();
+  const { getDocument } = usePDF();
+  const navigate = useNavigate();
+  const [data, setData] = (useState < PDFDocument) | (null > null);
 
-// Register Hindi Font
-Font.register({
-  family: "Noto Sans Devanagari",
-  src: "/fonts/NotoSansDevanagari-Regular.ttf",
-});
-const styles = StyleSheet.create({
-  page: {
-    padding: 20,
-    flexDirection: "column",
-    justifyContent: "space-between",
-  },
-  body: {
-    height: "70%",
-    margin: 20,
-    border: "1px solid black",
-    fontFamily: "Noto Sans Devanagari",
-    fontSize: 8,
-  },
-  footer: {
-    justifyContent: "space-between",
-    flexDirection: "row",
-    alignItems: "center",
-    fontSize: 10,
-  },
+  useEffect(() => {
+    if (id) {
+      const doc = getDocument(id);
+      if (doc) {
+        setData(doc);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Document not found",
+        });
+        navigate("/dashboard");
+      }
+    }
+  }, [id, getDocument, navigate]);
 
-  navbar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    fontSize: 10,
-  },
-  topSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    fontSize: 10,
-  },
-  title: {
-    fontSize: 14,
-    margin: 5,
-    fontWeight: 400,
-  },
-  middleSection: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 10,
-  },
-  boldLabel: { fontWeight: 600 },
-});
+  async function handleDownload() {
+    // In a real app, this would generate and download a PDF
+    toast({
+      title: "Success",
+      description: "PDF downloaded successfully",
+    });
+  }
 
-const HindiDocument = ({ data }) => {
+  const formatDate = (dateString) => {
+    try {
+      return format(new Date(dateString), "MMMM dd, yyyy");
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  if (!data) {
+    return (
+      <Layout>
+               {" "}
+        <div className="container mx-auto px-4 py-8 text-center">
+                    {t("common.loading")}       {" "}
+        </div>
+             {" "}
+      </Layout>
+    );
+  }
   return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View>
-          <View style={styles.navbar}>
-            <Text>{new Date().toLocaleString("en-IN")}</Text>
-            <Text>Anugya-Patra</Text>
-            <Text></Text>
-          </View>
-          <View style={styles.body}>
-            <iv style={styles.topSection}>
-              <Text>मूल प्रति</Text>
-              
-              <View style={styles.middleSection}>
-                <Text>"केवल राज्य के बाहर उपयोग हेतु "</Text>
-                <Text style={styles.title}>अनुज्ञा-पत्र</Text>
-                <Text style={styles.boldLabel}>
-                  कृषि उपज मंडी समिति - {data?.marketPlace || "Dabra"}
-                </Text>
-                <Text style={styles.label}>
-                  जिला -{" "}
-                  <Text style={styles.boldLabel}>
-                    {data?.marketDistrict || "Gwalior"}
-                  </Text>
-                </Text>
-                <Text style={styles.label}>
-                  अधिनियम की धारा-19(6) तथा उपविधि 20(10)
-                </Text>
-                <Text style={styles.boldLabel}>
-                  (मूल मंडी क्षेत्र अथवा मंडी प्रांगण से माल बाहर ले जाने के
-                  लिये)
-                </Text>
-              </View>
-              <View></View>
-              {/* A Qr to be displayed  */}
-            </View>
-          </View>
-        </View>
-        <View style={styles.footer}>
-          <Text>https://eanugya.mp.gov.in/Trader.aspx </Text>
-          <Text>1/1</Text>
-        </View>
-      </Page>
-    </Document>
+    <Layout>
+           {" "}
+      <div className="container mx-auto px-4 py-8">
+               {" "}
+        <div className="flex items-center justify-between mb-6">
+                   {" "}
+          <div className="flex items-center gap-2">
+                       {" "}
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/dashboard")}
+              className="p-0 h-auto"
+            >
+                            <ArrowLeft className="h-5 w-5" />           {" "}
+            </Button>
+                        <h1 className="text-2xl font-bold">{data.title}</h1>   
+                 {" "}
+          </div>
+                   {" "}
+          <div className="flex gap-2">
+                       {" "}
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => navigate(`/pdf-generator/${id}`)}
+            >
+                            <Edit className="h-4 w-4" />             {" "}
+              {t("dashboard.edit")}           {" "}
+            </Button>
+                     {" "}
+          </div>
+                 {" "}
+        </div>
+                {/* <PDFViewerComponent data={documentData} /> */}       {" "}
+        <div className=" border h-[1123px] w-[794px] bg-white  py-4 px-8 flex flex-col items-center">
+                   {" "}
+          <div className="flex justify-between items-center  w-[60%] self-start">
+                        <div>{new Date().toLocaleString("en-IN")}</div>         
+              <div>Anugya-Patra</div>         {" "}
+          </div>
+                   {" "}
+          <div className="border border-black mt-12 w-[90%] h-full">
+                       {" "}
+            <div className="text-center">"केवल राज्य के बाहर उपयोग हेतु "</div> 
+                     {" "}
+            <div className="flex justify-between items-center gap-4 px-4">
+                            <div>मूल प्रति</div>             {" "}
+              <div className="flex flex-col items-center">
+                               {" "}
+                <div className="text-2xl font-bold">अनुज्ञा-पत्र</div>         
+                     {" "}
+                <div className="font-semibold">
+                                    कृषि उपज मंडी समिति -{" "}
+                  {data?.marketPlace || "Dabra"}               {" "}
+                </div>
+                               {" "}
+                <div>
+                                    जिला -{" "}
+                  <b>{data?.marketDistrict || "Gwalior"}</b>               {" "}
+                </div>
+                               {" "}
+                <div>अधिनियम की धारा-19(6) तथा उपविधि 20(10)</div>             
+                 {" "}
+                <div className="font-bold">
+                                    (मूल मंडी क्षेत्र अथवा मंडी प्रांगण से माल
+                  बाहर ले जाने के                   लिये)                {" "}
+                </div>
+                             {" "}
+              </div>
+                           {" "}
+              <div>
+                               {" "}
+                <div className=" border w-full h-full p-16"></div>             {" "}
+              </div>
+                         {" "}
+            </div>
+                       {" "}
+            <div className="mt-4">
+                           {" "}
+              <div className="text-center">
+                                अनुज्ञा-पत्र क्रमांक :                {" "}
+                <b>{data?.licenseNumber || "25226015703031334"}</b>             {" "}
+              </div>
+                           {" "}
+              <div className="flex items-center gap-3 ">
+                               {" "}
+                <div className="flex gap-2 flex-1 ">
+                                    <div>1.</div>                 {" "}
+                  <div className="min-w-36">कृषि उपज का नाम</div>               
+                    <b>{data?.cropName || " jo"}</b>               {" "}
+                </div>
+                               {" "}
+                <div className="flex gap-2 self-start flex-1">
+                                   {" "}
+                  <div className="min-w-36">कृषि उपज का नाम</div>               
+                    <b>{data?.cropName || " jo"}</b>               {" "}
+                </div>
+                             {" "}
+              </div>
+                         {" "}
+            </div>
+                     {" "}
+          </div>
+                    <hr className="border-2 mt-16  w-full " />         {" "}
+          <div>NIC NIC BHOPAL(MP)&#169; 2025-2026</div>         {" "}
+          <div className="self-start mt-32 w-full flex items-center justify-between">
+                        <a>https://eanugya.mp.gov.in/Trader.aspx</a>           {" "}
+            <div>1/1</div>         {" "}
+          </div>
+                 {" "}
+        </div>
+             {" "}
+      </div>
+         {" "}
+    </Layout>
   );
 };
 
-const PDFViewerComponent = ({ data }) => {
-  return (
-    <>
-      <div className="pdf-viewer">
-        <PDFViewer width="100%" height="700px">
-          <HindiDocument data={data} />
-        </PDFViewer>
-      </div>
-
-      <div className="download-button">
-        <PDFDownloadLink
-          document={<HindiDocument data={data} />}
-          fileName="anugya-patra.pdf"
-          className="download-link"
-        >
-          {({ blob, url, loading, error }) =>
-            loading ? "PDF Loading..." : "Download PDF"
-          }
-        </PDFDownloadLink>
-      </div>
-    </>
-  );
-};
-export default PDFViewerComponent;
+export default PDFPreview;

@@ -1,20 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { usePDF, PDFDocument } from "@/contexts/PDFContext";
+import { usePDF } from "@/contexts/PDFContext";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ArrowLeft, Download, Edit } from "lucide-react";
+import { ArrowLeft, Edit } from "lucide-react";
 import Layout from "@/components/Layout";
 import { toast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
-import PDFViewerComponent from "@/components/PDFViewerComponent";
 const PDFPreview = () => {
   const { id } = useParams();
   const { t } = useLanguage();
   const { getDocument } = usePDF();
   const navigate = useNavigate();
-  const [data, setData] = (useState < PDFDocument) | (null > null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     if (id) {

@@ -1,1 +1,6 @@
-project_id = "lfbcdlnzqxwvfnvmarna"
+project_id = "bhzeajepzmrryrivmrga"
+
+# Public read-only proxy for data.gov.in; the app's auth is client-side only,
+# so the function cannot verify a Supabase JWT.
+[functions.ogd-mandi]
+verify_jwt = false

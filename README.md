@@ -1,69 +1,108 @@
-# Welcome to your Lovable project
+# PDF Junction – Anugya-Patra (mandi transit permit) generator
 
-## Project info
+A Vite + React + shadcn/ui app for preparing Madhya Pradesh **अनुज्ञा-पत्र** (agricultural
+produce transit permits). Fill the bilingual form, preview the Hindi A4 permit in the browser and
+download it as a PDF. Mandi, district, crop and variety fields offer live suggestions from the
+Government of India's Open Government Data platform ([data.gov.in](https://data.gov.in)).
 
-**URL**: https://lovable.dev/projects/b8e65f23-7f3d-42cc-86b8-c31f80cd7ffb
+## Features
 
-## How can I edit this code?
+- Bilingual (Hindi / English) permit form with inline validation (GSTIN, vehicle number, quantities).
+- A4 PDF rendered with `@react-pdf/renderer` and Noto Sans Devanagari (regular + bold); preview and download.
+- **data.gov.in prefill**: searchable dropdowns for *Market District → Mandi → Crop → Variety*, plus
+  today's modal price (₹/quintal) for the selection, from the Agmarknet dataset
+  *Current Daily Price of Various Commodities from Various Markets (Mandi)*
+  (resource `9ef84268-d588-465a-a308-a864a43d0070`). Every dropdown still accepts typed values, and
+  the last successful response is cached in the browser so the form works offline.
+- Documents are stored per user in `localStorage` (auth is a client-side mock; see *Roadmap*).
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/b8e65f23-7f3d-42cc-86b8-c31f80cd7ffb) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Local development
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i --legacy-peer-deps
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm install --legacy-peer-deps
+cp .env.example .env        # optional, see below
+npm run dev                 # http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+Other scripts: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## data.gov.in (OGD) integration
 
-**Use GitHub Codespaces**
+The browser never talks to `api.data.gov.in` directly. A Supabase Edge Function,
+[`supabase/functions/ogd-mandi`](supabase/functions/ogd-mandi/index.ts), holds the API key,
+pages through the dataset (up to 5 000 rows), caches each query for 6 hours and answers with CORS
+headers. The client (`src/integrations/ogd/`) calls it and derives the dropdown lists in
+`derive.ts`.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 1. Get a free API key
 
-## What technologies are used for this project?
+1. Create an account at <https://data.gov.in/user/register> and sign in.
+2. Open *My Account → API Key* (or the dataset's *API* tab) and generate a key.
 
-This project is built with .
+### 2. Deploy the edge function
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```sh
+npm i -g supabase            # or: brew install supabase/tap/supabase
+supabase login
+supabase link --project-ref bhzeajepzmrryrivmrga
+supabase secrets set DATA_GOV_IN_API_KEY=your-key-here
+supabase functions deploy ogd-mandi
+```
 
-## How can I deploy this project?
+Test it (the `x-region` header matters: data.gov.in only accepts connections from Indian IP
+ranges, and Supabase otherwise runs the function at the edge nearest the caller):
 
-Simply open [Lovable](https://lovable.dev/projects/b8e65f23-7f3d-42cc-86b8-c31f80cd7ffb) and click on Share -> Publish.
+```sh
+curl "https://bhzeajepzmrryrivmrga.supabase.co/functions/v1/ogd-mandi?district=Gwalior" \
+  -H "apikey: $VITE_SUPABASE_PUBLISHABLE_KEY" -H "x-region: ap-south-1"
+```
 
-## I want to use a custom domain - is that possible?
+The JSON contains `records`, `fields` (the column descriptors echoed from OGD, handy to confirm
+the schema), `total` and `fetchedAt`. The dataset is a daily snapshot, so only mandis and crops that
+reported prices that day appear; anything else can be typed in.
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+### 3. Run the function locally (optional)
+
+```sh
+supabase functions serve ogd-mandi --env-file supabase/.env.local   # file holds DATA_GOV_IN_API_KEY
+# then in .env:
+VITE_OGD_MANDI_URL=http://127.0.0.1:54321/functions/v1/ogd-mandi
+```
+
+## Environment variables
+
+| Variable | Where | Purpose |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | `.env` (public) | Supabase project URL; defaults to the linked project |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | `.env` (public) | Supabase publishable (anon) key; defaults to the linked project |
+| `VITE_OGD_MANDI_URL` | `.env` (public, optional) | Override the edge-function URL (local dev) |
+| `VITE_OGD_EDGE_REGION` | `.env` (public, optional) | Supabase edge region to pin; default `ap-south-1` (Mumbai) |
+| `DATA_GOV_IN_API_KEY` | Supabase secret | data.gov.in key used by the edge function only |
+
+## Project layout
+
+```
+src/
+  components/PDFForm.tsx            permit form (comboboxes + validation errors)
+  components/form/ComboboxField.tsx searchable dropdown that accepts custom text
+  components/form/MandiPriceHint.tsx today's Agmarknet price for the selection
+  components/pdf/AnugyaPatraDocument.tsx  react-pdf layout of the permit
+  components/pdf/fonts.ts           Devanagari font registration
+  hooks/useMandiData.ts             React Query + localStorage cache of OGD rows
+  integrations/ogd/                 OGD types, fetch client, pure list/price helpers (+ tests)
+  lib/permit.ts                     blank permit + migration of older stored documents
+  lib/permitSchema.ts               zod validation (+ tests)
+  pages/                            Login, Signup, Dashboard, PDFGenerator, PDFPreview
+supabase/functions/ogd-mandi/       edge-function proxy for data.gov.in
+```
+
+## Roadmap
+
+- Replace the mock login with Supabase Auth and store permits in a Postgres table with RLS.
+- Commit a seed list of MP mandis/commodities so suggestions are complete even when the daily
+  snapshot is sparse.
+
+## Lovable
+
+This project was bootstrapped with [Lovable](https://lovable.dev/projects/b8e65f23-7f3d-42cc-86b8-c31f80cd7ffb);
+pushes to this repository are reflected there.

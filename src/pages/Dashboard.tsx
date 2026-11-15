@@ -36,8 +36,12 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
+  const q = searchQuery.trim().toLowerCase();
   const filteredDocuments = documents.filter((doc) =>
-    doc.title.toLowerCase().includes(searchQuery.toLowerCase())
+    !q ||
+    [doc.title, doc.permitNumber, doc.vehicleNumber, doc.ownerName, doc.marketPlace, doc.cropName]
+      .filter(Boolean)
+      .some((v) => String(v).toLowerCase().includes(q))
   );
 
   const handleEdit = (id: string) => {
@@ -105,6 +109,8 @@ const Dashboard = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("dashboard.tableTitle")}</TableHead>
+                    <TableHead>{t("dashboard.tablePermit")}</TableHead>
+                    <TableHead>{t("dashboard.tableMandi")}</TableHead>
                     <TableHead>{t("dashboard.tableDate")}</TableHead>
                     <TableHead className="text-right">{t("dashboard.tableActions")}</TableHead>
                   </TableRow>
@@ -113,6 +119,10 @@ const Dashboard = () => {
                   {filteredDocuments.map((doc: PDFDocument) => (
                     <TableRow key={doc.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">{doc.title}</TableCell>
+                      <TableCell>{doc.permitNumber || "—"}</TableCell>
+                      <TableCell>
+                        {[doc.marketPlace, doc.cropName].filter(Boolean).join(" · ") || "—"}
+                      </TableCell>
                       <TableCell>{formatDate(doc.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">

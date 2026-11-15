@@ -11,7 +11,9 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import PDFGenerator from "./pages/PDFGenerator";
-import PDFPreview from "./pages/PDFPreview";
+import { Suspense, lazy } from "react";
+
+const PDFPreview = lazy(() => import("./pages/PDFPreview"));
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,7 +74,13 @@ const App = () => (
                   path="/pdf-preview/:id" 
                   element={
                     <ProtectedRoute>
-                      <PDFPreview />
+                      <Suspense
+                        fallback={
+                          <div className="min-h-screen flex items-center justify-center">Loading...</div>
+                        }
+                      >
+                        <PDFPreview />
+                      </Suspense>
                     </ProtectedRoute>
                   }
                 />

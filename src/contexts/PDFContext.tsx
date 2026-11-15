@@ -5,6 +5,8 @@ import { PDFDocument, PDFFormData } from "@/types/pdf";
 
 interface PDFContextType {
   documents: PDFDocument[];
+  /** True once documents for the signed-in user have been read from storage. */
+  ready: boolean;
   loading: boolean;
   error: string | null;
   createDocument: (document: PDFFormData) => Promise<PDFDocument>;
@@ -18,6 +20,7 @@ const PDFContext = createContext<PDFContextType | undefined>(undefined);
 export function PDFProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [documents, setDocuments] = useState<PDFDocument[]>([]);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,16 +29,17 @@ export function PDFProvider({ children }: { children: React.ReactNode }) {
       loadDocuments();
     } else {
       setDocuments([]);
+      setLoadedFor(null);
     }
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const loadDocuments = () => {
     try {
       setLoading(true);
       const storedDocs = localStorage.getItem(`pdfJunction_docs_${user?.id}`);
-      if (storedDocs) {
-        setDocuments(JSON.parse(storedDocs));
-      }
+      setDocuments(storedDocs ? JSON.parse(storedDocs) : []);
+      setLoadedFor(user?.id ?? null);
     } catch (error) {
       console.error("Failed to load documents:", error);
       setError("Failed to load documents. Please try again.");
@@ -164,6 +168,7 @@ export function PDFProvider({ children }: { children: React.ReactNode }) {
     <PDFContext.Provider
       value={{
         documents,
+        ready: !!user && loadedFor === user.id,
         loading,
         error,
         createDocument,
